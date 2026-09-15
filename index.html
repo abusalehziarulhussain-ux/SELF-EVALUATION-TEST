@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Semester Examination</title>
+<style>
+  :root{
+    --paper:#f6f3ec;
+    --ink:#1f2419;
+    --ink-soft:#4a4f42;
+    --rule:#c9c2ae;
+    --accent:#7a2e2e;
+    --accent-soft:#a9483f;
+    --good:#2f5d3a;
+    --good-bg:#e4ede3;
+    --bad:#7a2e2e;
+    --bad-bg:#f3e2df;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    line-height:1.5;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* Header */
+  .masthead{
+    border-bottom:3px double var(--rule);
+    padding-bottom:14px;
+    margin-bottom:26px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .masthead h1{
+    font-size:1.5rem;
+    margin:0;
+    letter-spacing:0.02em;
+    font-weight:600;
+  }
+  .masthead .sub{
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+  .timer-box{
+    font-variant-numeric:tabular-nums;
+    font-family: "Courier New", monospace;
+    font-size:1.4rem;
+    background:var(--ink);
+    color:var(--paper);
+    padding:8px 16px;
+    border-radius:2px;
+    min-width:104px;
+    text-align:center;
+  }
+  .timer-box.low{background:var(--accent);}
+
+  /* Start screen */
+  .start-card{
+    background:var(--card);
+    border:1px solid var(--rule);
+    padding:40px 32px;
+    margin-top:40px;
+    text-align:center;
+  }
+  .start-card h2{margin-top:0;font-size:1.2rem;letter-spacing:0.03em;}
+  .start-card p{color:var(--ink-soft);font-size:0.95rem;}
+  .name-field{
+    margin:24px 0;
+    text-align:left;
+  }
+  .name-field label{
+    display:block;
+    font-size:0.8rem;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .name-field input{
+    width:100%;
+    padding:12px 14px;
+    font-size:1.05rem;
+    font-family:inherit;
+    border:1px solid var(--rule);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .name-field input:focus{outline:2px solid var(--accent-soft);outline-offset:1px;}
+  .rules{
+    text-align:left;
+    font-size:0.85rem;
+    color:var(--ink-soft);
+    border-top:1px solid var(--rule);
+    padding-top:16px;
+    margin-top:20px;
+  }
+  .rules li{margin-bottom:4px;}
+
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+    padding:13px 30px;
+    font-size:1rem;
+    letter-spacing:0.02em;
+  }
+  .btn-primary:hover{background:var(--accent-soft);}
+  .btn-primary:disabled{background:#b7ada0;cursor:not-allowed;}
+
+  /* Question nav grid */
+  .navgrid{
+    position:sticky;
+    top:0;
+    background:var(--paper);
+    padding:10px 0 14px;
+    z-index:5;
+    border-bottom:1px solid var(--rule);
+    margin-bottom:20px;
+  }
+  .navgrid-inner{
+    display:grid;
+    grid-template-columns:repeat(10,1fr);
+    gap:5px;
+  }
+  .navcell{
+    aspect-ratio:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:0.72rem;
+    border:1px solid var(--rule);
+    background:var(--card);
+    color:var(--ink-soft);
+    text-decoration:none;
+  }
+  .navcell.answered{background:var(--good-bg);border-color:var(--good);color:var(--good);}
+
+  /* Question cards */
+  .qcard{
+    background:var(--card);
+    border:1px solid var(--rule);
+    padding:20px 22px;
+    margin-bottom:16px;
+    scroll-margin-top:120px;
+  }
+  .qnum{
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--accent);
+    margin-bottom:6px;
+  }
+  .qtext{font-size:1.02rem;margin-bottom:14px;}
+  .opts{display:flex;flex-direction:column;gap:8px;}
+  .opt{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:9px 12px;
+    border:1px solid var(--rule);
+    background:var(--paper);
+    cursor:pointer;
+  }
+  .opt:hover{border-color:var(--accent-soft);}
+  .opt.selected{
+    border-color:var(--accent);
+    background:#efe4e1;
+  }
+  .opt input{margin-top:3px;accent-color:var(--accent);}
+  .opt .lab{font-weight:600;margin-right:2px;}
+
+  .submit-bar{
+    position:sticky;
+    bottom:0;
+    background:var(--paper);
+    border-top:1px solid var(--rule);
+    padding:16px 0;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+  .progress-text{font-size:0.85rem;color:var(--ink-soft);}
+
+  /* Results */
+  .results-head{
+    background:var(--card);
+    border:1px solid var(--rule);
+    padding:26px 28px;
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .results-head .name{font-size:1.1rem;font-weight:600;}
+  .score-big{
+    font-size:2.6rem;
+    color:var(--accent);
+    font-weight:700;
+    margin:8px 0 0;
+  }
+  .score-sub{color:var(--ink-soft);font-size:0.9rem;}
+
+  .review-item{
+    background:var(--card);
+    border:1px solid var(--rule);
+    padding:16px 20px;
+    margin-bottom:10px;
+  }
+  .review-item.correct{border-left:4px solid var(--good);}
+  .review-item.incorrect{border-left:4px solid var(--bad);}
+  .review-item.blank{border-left:4px solid var(--rule);}
+  .review-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:10px;
+    margin-bottom:6px;
+  }
+  .review-q{font-size:0.95rem;}
+  .review-mark{
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    padding:2px 8px;
+    white-space:nowrap;
+  }
+  .review-mark.correct{background:var(--good-bg);color:var(--good);}
+  .review-mark.incorrect{background:var(--bad-bg);color:var(--bad);}
+  .review-mark.blank{background:#eee;color:var(--ink-soft);}
+  .review-ans{font-size:0.85rem;color:var(--ink-soft);}
+  .review-ans b{color:var(--ink);}
+
+  .filter-bar{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+  .filter-btn{
+    padding:7px 14px;
+    font-size:0.8rem;
+    border:1px solid var(--rule);
+    background:var(--card);
+    color:var(--ink-soft);
+  }
+  .filter-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+  .hidden{display:none !important;}
+  footer.note{text-align:center;color:var(--ink-soft);font-size:0.78rem;margin-top:30px;}
+
+  @media (max-width:480px){
+    .navgrid-inner{grid-template-columns:repeat(8,1fr);}
+    .masthead{flex-direction:column;align-items:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== START SCREEN ===== -->
+  <div id="startScreen">
+    <div class="masthead">
+      <div>
+        <h1>Semester Examination</h1>
+        <div class="sub">General Studies &mdash; 50 Questions &middot; 50 Minutes</div>
+      </div>
+    </div>
+    <div class="start-card">
+      <h2>Before you begin</h2>
+      <p>Enter your name to start the test. The timer starts the moment you click Start.</p>
+      <div class="name-field">
+        <label for="studentName">Student Name</label>
+        <input type="text" id="studentName" placeholder="Type your full name" autocomplete="off">
+      </div>
+      <button class="btn-primary" id="startBtn">Start Test</button>
+      <ul class="rules">
+        <li>50 questions, 1 mark each. No negative marking.</li>
+        <li>Total time: 50 minutes. The test auto-submits when time runs out.</li>
+        <li>You can move between questions freely using the number grid.</li>
+        <li>Once submitted, you cannot change your answers.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== TEST SCREEN ===== -->
+  <div id="testScreen" class="hidden">
+    <div class="masthead">
+      <div>
+        <h1>Semester Examination</h1>
+        <div class="sub" id="studentLabel"></div>
+      </div>
+      <div class="timer-box" id="timerBox">50:00</div>
+    </div>
+
+    <div class="navgrid">
+      <div class="navgrid-inner" id="navgridInner"></div>
+    </div>
+
+    <div id="questionList"></div>
+
+    <div class="submit-bar">
+      <span class="progress-text" id="progressText">0 / 50 answered</span>
+      <button class="btn-primary" id="submitBtn">Submit Test</button>
+    </div>
+  </div>
+
+  <!-- ===== RESULTS SCREEN ===== -->
+  <div id="resultsScreen" class="hidden">
+    <div class="results-head">
+      <div class="sub">Answer Sheet</div>
+      <div class="name" id="resultName"></div>
+      <div class="score-big" id="scoreBig"></div>
+      <div class="score-sub" id="scoreSub"></div>
+      <div class="score-sub" id="emailStatus" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">All 50</button>
+      <button class="filter-btn" data-filter="correct">Correct</button>
+      <button class="filter-btn" data-filter="incorrect">Incorrect</button>
+      <button class="filter-btn" data-filter="blank">Unanswered</button>
+    </div>
+
+    <div id="reviewList"></div>
+  </div>
+
+  <footer class="note">Assam / General Studies practice examination</footer>
+</div>
+
+<script>
+const QUESTIONS = [
+{q:"Which layer of the atmosphere contains almost the entire amount of atmospheric water vapour and dust particles?",o:{A:"Stratosphere",B:"Troposphere",C:"Mesosphere",D:"Thermosphere"},a:"B"},
+{q:"The first railway line in India, according to the textbook, connected:",o:{A:"Calcutta and Delhi",B:"Madras and Bangalore",C:"Bombay and Thana",D:"Delhi and Peshawar"},a:"C"},
+{q:"According to Robbins, an economic problem arises mainly because:",o:{A:"Wants are limited and resources are unlimited",B:"Wants and resources are both unlimited",C:"Human wants are unlimited while resources are scarce and have alternative uses",D:"Resources have no alternative uses"},a:"C"},
+{q:"The Equatorial Low Pressure Belt is also known as:",o:{A:"Horse Latitude",B:"Polar Belt",C:"Equatorial Doldrum",D:"Sub-Polar Belt"},a:"C"},
+{q:"Who founded the Brahmo Sabha in 1828?",o:{A:"Ishwar Chandra Vidyasagar",B:"Raja Ram Mohun Roy",C:"Swami Dayanand Saraswati",D:"Dadabhai Naoroji"},a:"B"},
+{q:"Which of the following was a major characteristic of a political party according to the textbook?",o:{A:"Absence of organization",B:"Indifference towards national interest",C:"Aspiration for capturing political power",D:"Rejection of political planning"},a:"C"},
+{q:"The normal atmospheric pressure at sea level is approximately:",o:{A:"760 mm of mercury",B:"500 mm of mercury",C:"100 mm of mercury",D:"1200 mm of mercury"},a:"A"},
+{q:"The Moamoriya Rebellion initially gathered approximately how many soldiers towards the end of 1769?",o:{A:"2,000",B:"5,000",C:"7,000",D:"14,000"},a:"C"},
+{q:"Which factor directly causes air movement from a high-pressure region towards a low-pressure region?",o:{A:"Humidity alone",B:"Pressure gradient",C:"Rotation of the Moon",D:"Ocean salinity"},a:"B"},
+{q:"The first political party of India mentioned in the textbook was:",o:{A:"Muslim League",B:"Hindu Mahasabha",C:"Indian National Congress",D:"Swaraj Party"},a:"C"},
+{q:"Which of the following correctly describes an economic good?",o:{A:"Its supply is greater than demand",B:"It is always available freely from nature",C:"Its supply is less than demand and therefore it has a price",D:"It cannot satisfy human wants"},a:"C"},
+{q:"The English East India Company was formed in:",o:{A:"1599",B:"1600",C:"1608",D:"1615"},a:"B"},
+{q:"Which atmospheric layer is associated with the ozone layer and increasing temperature with altitude?",o:{A:"Troposphere",B:"Stratosphere",C:"Mesosphere",D:"Exosphere"},a:"B"},
+{q:"The Paik system became an important socio-economic factor behind the Moamoriya Rebellion mainly because:",o:{A:"Paiks were completely exempted from state service",B:"The period of compulsory service increased",C:"Paiks were given excessive political power",D:"Paiks controlled all Ahom trade"},a:"B"},
+{q:"Which economist gave the wealth-based definition of economics?",o:{A:"Alfred Marshall",B:"Lionel Robbins",C:"Adam Smith",D:"A.C. Pigou"},a:"C"},
+{q:"Sir Thomas Roe met the Mughal Emperor Jahangir at:",o:{A:"Delhi",B:"Surat",C:"Ajmer",D:"Calcutta"},a:"C"},
+{q:"Which pressure belt is approximately located between 25\u2013 35\u00b0 North and South latitudes?",o:{A:"Equatorial Low Pressure Belt",B:"Sub-Tropical High Pressure Belt",C:"Sub-Polar Low Pressure Belt",D:"Polar High Pressure Belt"},a:"B"},
+{q:"The first phase of the Moamoriya Rebellion ended after:",o:{A:"Captain Welsh defeated the rebels",B:"Ragha Moran was killed and Ramakanta was murdered",C:"Sarbananda Singha surrendered",D:"Purnananda Burhagohain became king"},a:"B"},
+{q:"In economics, the power of a commodity or service to satisfy human wants is called:",o:{A:"Wealth",B:"Utility",C:"Demand",D:"Supply"},a:"B"},
+{q:"The Battle of Plassey in 1757 is important because it:",o:{A:"Ended British rule in India",B:"Marked the beginning of British political control in India",C:"Established the Mughal Empire",D:"Started the Indian National Congress"},a:"B"},
+{q:"Which of the following correctly matches the atmospheric layer with its characteristic?",o:{A:"Troposphere \u2014 absence of weather",B:"Stratosphere \u2014 ozone layer",C:"Mesosphere \u2014 maximum atmospheric density",D:"Exosphere \u2014 almost entire water vapour"},a:"B"},
+{q:"Which was one important reason for the rise of regional political parties in India?",o:{A:"Complete cultural uniformity",B:"Linguistic and religious diversity",C:"Absence of regional interests",D:"Elimination of state-level issues"},a:"B"},
+{q:"The first comprehensive plan for the spread of modern education in India was presented by:",o:{A:"Lord Dalhousie",B:"Sir Charles Wood",C:"Lord Ripon",D:"Warren Hastings"},a:"B"},
+{q:"Which of the following is NOT one of the four characteristics required for a good to be regarded as wealth?",o:{A:"Utility",B:"Scarcity",C:"Transferability",D:"Unlimited availability"},a:"D"},
+{q:"The highest boundary of the troposphere is called:",o:{A:"Stratopause",B:"Mesopause",C:"Tropopause",D:"Thermopause"},a:"C"},
+{q:"The Moamoriya Rebellion was described as a mass uprising primarily because:",o:{A:"It involved only Ahom nobles",B:"It involved a large section of common people",C:"It was led entirely by Europeans",D:"It was restricted to the royal family"},a:"B"},
+{q:"Who was the first President of the Indian National Congress?",o:{A:"Dadabhai Naoroji",B:"A.O. Hume",C:"Womesh Chandra Banerjee",D:"Surendranath Banerjee"},a:"C"},
+{q:"If the national income of a country is \u20b910 lakh and its population is 10,000, its per capita income is:",o:{A:"\u20b910",B:"\u20b9100",C:"\u20b91,000",D:"\u20b910,000"},a:"C"},
+{q:"Which process involves the wearing away of the river's surface or valley?",o:{A:"Deposition",B:"Erosion",C:"Accumulation",D:"Sedimentation"},a:"B"},
+{q:"Captain Thomas Welsh's expedition to Assam was mainly intended to:",o:{A:"Establish French control over Assam",B:"Gather information about Assam and restore Ahom rule",C:"Establish a new Ahom dynasty",D:"Expand the Mayamara Sattra"},a:"B"},
+{q:"Which statement about the Stratosphere is correct according to the textbook?",o:{A:"Most weather phenomena occur there",B:"Temperature decreases continuously with height",C:"Aircraft routes are associated with it because of horizontal winds and lack of clouds",D:"It contains almost all atmospheric dust"},a:"C"},
+{q:"Which of the following represents the correct sequence?",o:{A:"Muslim League \u2192 Indian National Congress \u2192 Swaraj Party",B:"Indian National Congress \u2192 Muslim League \u2192 Swaraj Party",C:"Swaraj Party \u2192 Muslim League \u2192 Congress",D:"Hindu Mahasabha \u2192 Congress \u2192 Muslim League"},a:"B"},
+{q:"In Robbins' definition, the term \u201calternative uses\u201d means that:",o:{A:"Resources can be used for only one purpose",B:"Scarce resources can be used for different purposes",C:"Wants have no relationship with resources",D:"All resources are freely available"},a:"B"},
+{q:"Kirtichandra Borbarua's actions contributed to the beginning of the Moamoriya Rebellion because he:",o:{A:"Supported the Mayamara Mahanta",B:"Insulted and punished Moamoriya leaders Nahor Khora and Ragha",C:"Became the leader of the rebels",D:"Invited Captain Welsh to Assam"},a:"B"},
+{q:"Which means of communication helped break the isolation of people living in distant areas and contributed to Indian nationalism?",o:{A:"Telegraph",B:"Bullock cart",C:"Traditional boat only",D:"Local fairs only"},a:"A"},
+{q:"A government formed when no single political party obtains an absolute majority is called:",o:{A:"Presidential government",B:"Coalition/Alliance government",C:"Monarchical government",D:"Unitary government"},a:"B"},
+{q:"Which atmospheric layer extends approximately from 400 km to 10,000 km according to the textbook?",o:{A:"Mesosphere",B:"Thermosphere",C:"Exosphere",D:"Stratosphere"},a:"C"},
+{q:"The first railway line of 21 miles in India was inaugurated in:",o:{A:"1839",B:"1851",C:"1853",D:"1861"},a:"C"},
+{q:"Which of the following is an example of non-economic welfare?",o:{A:"Earning wages",B:"Buying a house",C:"Moral and social welfare that cannot be measured in money",D:"Increasing national income"},a:"C"},
+{q:"The Moamoriya rebels captured the Ahom capital during the first phase and placed ______ on the throne.",o:{A:"Bharat Singha",B:"Ramakanta/Ramananda",C:"Gaurinath Singha",D:"Purnananda Burhagohain"},a:"B"},
+{q:"Which pressure belt is characterized by extremely cold and dry air and permanently high pressure?",o:{A:"Equatorial Low Pressure Belt",B:"Sub-Tropical High Pressure Belt",C:"Sub-Polar Low Pressure Belt",D:"Polar High Pressure Belt"},a:"D"},
+{q:"Dadabhai Naoroji's economic criticism of British rule particularly emphasized:",o:{A:"The industrial revolution in Europe",B:"The drain of India's wealth to Britain",C:"The advantages of British imports",D:"The expansion of the Mughal Empire"},a:"B"},
+{q:"If a person desires to buy a car but lacks the purchasing power, according to the textbook this desire is:",o:{A:"Effective demand",B:"Supply",C:"Not demand in the economic sense",D:"Investment"},a:"C"},
+{q:"Which was a major reason for the development of modern transport and communication under British rule?",o:{A:"Only promotion of Indian handicrafts",B:"Administrative convenience, military defence and commercial exploitation",C:"Elimination of British trade",D:"Promotion of village self-sufficiency"},a:"B"},
+{q:"Which of the following is correctly matched?",o:{A:"Equatorial region \u2014 permanently high pressure",B:"Polar region \u2014 permanently low pressure",C:"Equatorial region \u2014 low pressure",D:"Sub-tropical region \u2014 low pressure throughout"},a:"C"},
+{q:"The first Alliance/Coalition government at the Centre was formed in 1977 under:",o:{A:"Jawaharlal Nehru",B:"Morarji Desai",C:"Indira Gandhi",D:"Choudhary Charan Singh"},a:"B"},
+{q:"Which of the following best distinguishes capital from investment in the textbook?",o:{A:"Capital is a flow while investment is a stock",B:"Capital is a stock while investment is a flow",C:"Both are exactly the same concept",D:"Neither is related to production"},a:"B"},
+{q:"The English received permission from Jahangir to establish factories at Surat after the efforts of:",o:{A:"Captain William Hawkins",B:"Sir Thomas Roe",C:"Robert Clive",D:"John Surman"},a:"B"},
+{q:"Which force is directly related to the difference in atmospheric pressure between two places?",o:{A:"Pressure Gradient Force",B:"Gravitational Force only",C:"Frictional Force only",D:"Centrifugal Force only"},a:"A"},
+{q:"Which sequence correctly represents the development of the Moamoriya Rebellion?",o:{A:"Oppression \u2192 conflict involving Kirtichandra \u2192 revolt \u2192 capture of capital",B:"Captain Welsh's arrival \u2192 Paik system \u2192 Mayamara Sattra \u2192 revolt",C:"Capture of capital \u2192 Paik system \u2192 Kirtichandra's insult \u2192 revolt",D:"British occupation \u2192 revolt \u2192 Mayamara Sattra \u2192 Ahom monarchy"},a:"A"}
+];
+
+const TEACHER_EMAIL = "abusalehziarulhussain@gmail.com";
+const TOTAL_SECONDS = 50 * 60;
+let studentName = "";
+let answers = new Array(QUESTIONS.length).fill(null);
+let timeLeft = TOTAL_SECONDS;
+let timerHandle = null;
+let submitted = false;
+
+const startScreen = document.getElementById('startScreen');
+const testScreen = document.getElementById('testScreen');
+const resultsScreen = document.getElementById('resultsScreen');
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  const nameInput = document.getElementById('studentName');
+  const name = nameInput.value.trim();
+  if (!name) {
+    nameInput.style.borderColor = '#7a2e2e';
+    nameInput.focus();
+    return;
+  }
+  studentName = name;
+  startTest();
+});
+
+function startTest(){
+  startScreen.classList.add('hidden');
+  testScreen.classList.remove('hidden');
+  document.getElementById('studentLabel').textContent = 'Candidate: ' + studentName;
+  buildNavGrid();
+  buildQuestions();
+  updateProgress();
+  timerHandle = setInterval(tick, 1000);
+}
+
+function tick(){
+  timeLeft--;
+  if (timeLeft <= 0){
+    timeLeft = 0;
+    renderTimer();
+    clearInterval(timerHandle);
+    finishTest(true);
+    return;
+  }
+  renderTimer();
+}
+
+function renderTimer(){
+  const m = Math.floor(timeLeft/60).toString().padStart(2,'0');
+  const s = (timeLeft%60).toString().padStart(2,'0');
+  const box = document.getElementById('timerBox');
+  box.textContent = m + ':' + s;
+  box.classList.toggle('low', timeLeft <= 300);
+}
+renderTimer();
+
+function buildNavGrid(){
+  const grid = document.getElementById('navgridInner');
+  grid.innerHTML = '';
+  QUESTIONS.forEach((_, i) => {
+    const a = document.createElement('a');
+    a.href = '#q' + (i+1);
+    a.className = 'navcell';
+    a.id = 'nav' + i;
+    a.textContent = (i+1);
+    grid.appendChild(a);
+  });
+}
+
+function buildQuestions(){
+  const list = document.getElementById('questionList');
+  list.innerHTML = '';
+  QUESTIONS.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    card.id = 'q' + (i+1);
+
+    const num = document.createElement('div');
+    num.className = 'qnum';
+    num.textContent = 'Question ' + (i+1) + ' of ' + QUESTIONS.length;
+    card.appendChild(num);
+
+    const qt = document.createElement('div');
+    qt.className = 'qtext';
+    qt.textContent = item.q;
+    card.appendChild(qt);
+
+    const opts = document.createElement('div');
+    opts.className = 'opts';
+    ['A','B','C','D'].forEach(letter => {
+      const optLabel = document.createElement('label');
+      optLabel.className = 'opt';
+      optLabel.id = 'opt' + i + letter;
+
+      const radio = document.createElement('input');
+      radio.type = 'radio';
+      radio.name = 'q' + i;
+      radio.value = letter;
+      radio.addEventListener('change', () => selectAnswer(i, letter));
+
+      const span = document.createElement('span');
+      span.innerHTML = '<span class="lab">' + letter + '.</span> ' + item.o[letter];
+
+      optLabel.appendChild(radio);
+      optLabel.appendChild(span);
+      opts.appendChild(optLabel);
+    });
+    card.appendChild(opts);
+    list.appendChild(card);
+  });
+}
+
+function selectAnswer(qIndex, letter){
+  answers[qIndex] = letter;
+  ['A','B','C','D'].forEach(l => {
+    document.getElementById('opt' + qIndex + l).classList.toggle('selected', l === letter);
+  });
+  document.getElementById('nav' + qIndex).classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress(){
+  const answered = answers.filter(a => a !== null).length;
+  document.getElementById('progressText').textContent = answered + ' / ' + QUESTIONS.length + ' answered';
+}
+
+document.getElementById('submitBtn').addEventListener('click', () => {
+  const answered = answers.filter(a => a !== null).length;
+  if (answered < QUESTIONS.length){
+    const ok = confirm('You have answered ' + answered + ' of ' + QUESTIONS.length + ' questions. Submit anyway?');
+    if (!ok) return;
+  }
+  finishTest(false);
+});
+
+function finishTest(auto){
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerHandle);
+  testScreen.classList.add('hidden');
+  resultsScreen.classList.remove('hidden');
+  renderResults(auto);
+}
+
+function renderResults(auto){
+  let score = 0;
+  QUESTIONS.forEach((item, i) => {
+    if (answers[i] === item.a) score++;
+  });
+
+  document.getElementById('resultName').textContent = studentName;
+  document.getElementById('scoreBig').textContent = score + ' / ' + QUESTIONS.length;
+  const timeUsed = TOTAL_SECONDS - timeLeft;
+  const mUsed = Math.floor(timeUsed/60);
+  const sUsed = timeUsed%60;
+  document.getElementById('scoreSub').textContent =
+    (auto ? 'Time expired \u2014 auto-submitted. ' : 'Submitted. ') +
+    'Time used: ' + mUsed + ' min ' + sUsed + ' sec.';
+
+  const reviewList = document.getElementById('reviewList');
+  reviewList.innerHTML = '';
+
+  QUESTIONS.forEach((item, i) => {
+    const selected = answers[i];
+    const isBlank = selected === null;
+    const isCorrect = selected === item.a;
+    const status = isBlank ? 'blank' : (isCorrect ? 'correct' : 'incorrect');
+
+    const div = document.createElement('div');
+    div.className = 'review-item ' + status;
+    div.dataset.status = status;
+
+    const top = document.createElement('div');
+    top.className = 'review-top';
+    const qspan = document.createElement('div');
+    qspan.className = 'review-q';
+    qspan.textContent = (i+1) + '. ' + item.q;
+    const mark = document.createElement('div');
+    mark.className = 'review-mark ' + status;
+    mark.textContent = isBlank ? 'Unanswered \u00b7 0' : (isCorrect ? 'Correct \u00b7 1' : 'Incorrect \u00b7 0');
+    top.appendChild(qspan);
+    top.appendChild(mark);
+    div.appendChild(top);
+
+    const ans = document.createElement('div');
+    ans.className = 'review-ans';
+    const studentAnsText = isBlank ? 'No answer selected' : (selected + '. ' + item.o[selected]);
+    ans.innerHTML = 'Student\u2019s answer: <b>' + studentAnsText + '</b>' +
+      (isCorrect ? '' : '<br>Correct answer: <b>' + item.a + '. ' + item.o[item.a] + '</b>');
+    div.appendChild(ans);
+
+    reviewList.appendChild(div);
+  });
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      document.querySelectorAll('.review-item').forEach(item => {
+        item.classList.toggle('hidden', f !== 'all' && item.dataset.status !== f);
+      });
+    });
+  });
+
+  sendResultsEmail(score, timeUsed, auto);
+}
+
+function sendResultsEmail(score, timeUsed, auto){
+  const statusEl = document.getElementById('emailStatus');
+  statusEl.textContent = 'Sending result to teacher\u2026';
+
+  const mUsed = Math.floor(timeUsed/60);
+  const sUsed = timeUsed%60;
+
+  let answerLines = '';
+  QUESTIONS.forEach((item, i) => {
+    const selected = answers[i];
+    const isBlank = selected === null;
+    const isCorrect = selected === item.a;
+    const status = isBlank ? 'BLANK' : (isCorrect ? 'CORRECT' : 'WRONG');
+    const studentAnsText = isBlank ? '-' : (selected + '. ' + item.o[selected]);
+    answerLines += (i+1) + '. [' + status + '] Student chose: ' + studentAnsText +
+      (isCorrect ? '' : '  |  Correct: ' + item.a + '. ' + item.o[item.a]) + '\n';
+  });
+
+  const payload = {
+    _subject: 'Exam result: ' + studentName + ' (' + score + '/' + QUESTIONS.length + ')',
+    Student_Name: studentName,
+    Score: score + ' out of ' + QUESTIONS.length,
+    Time_Used: mUsed + ' min ' + sUsed + ' sec' + (auto ? ' (auto-submitted, time expired)' : ''),
+    Submitted_At: new Date().toString(),
+    Full_Answer_Sheet: answerLines,
+    _template: 'table'
+  };
+
+  fetch('https://formsubmit.co/ajax/' + encodeURIComponent(TEACHER_EMAIL), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(res => res.json())
+  .then(() => {
+    statusEl.textContent = 'Result sent to teacher.';
+  })
+  .catch(() => {
+    statusEl.textContent = 'Could not send automatically \u2014 please show this screen to your teacher or screenshot it.';
+  });
+}
+</script>
+</body>
+</html>
